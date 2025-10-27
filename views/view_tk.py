@@ -1,105 +1,89 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext
+from tkinter import font as tkFont
 
-class View(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Analisador de Palavras do Autômato")
-        self.geometry("600x450")
+BG_COLOR = "#f0f0f0"
+BTN_COLOR = "#007bff"
+BTN_FG_COLOR = "#ffffff"
+LABEL_COLOR = "#333333"
+TEXT_BG_COLOR = "#ffffff"
+BORDER_COLOR = "#cccccc"
 
-        self.controller = None
-        self.filepaths = []
+window = tk.Tk()
+window.title("Analisador de Palavras do Autômato")
+window.geometry("500x450")
+window.configure(bg=BG_COLOR)
+window.resizable(False, False)
 
-        frame_botoes = tk.Frame(self)
-        frame_botoes.pack(pady=15)
+FONT_BOLD = tkFont.Font(family="Arial", size=12, weight="bold")
+FONT_BUTTON = tkFont.Font(family="Arial", size=10, weight="bold")
+FONT_TEXT = tkFont.Font(family="Courier New", size=10)
 
-        self.btn_selecionar = tk.Button(
-            frame_botoes, 
-            text="1. Selecionar Arquivos (.txt)", 
-            command=self.solicitar_arquivos_palavras,
-            font=('Arial', 10)
-        )
-        self.btn_selecionar.pack(side=tk.LEFT, padx=10)
+frame_botoes = tk.Frame(window, bg=BG_COLOR)
+frame_botoes.pack(pady=20)
 
-        self.btn_processar = tk.Button(
-            frame_botoes, 
-            text="2. Processar Palavras", 
-            command=self.iniciar_processamento,
-            font=('Arial', 10, 'bold')
-        )
-        self.btn_processar.pack(side=tk.LEFT, padx=10)
+btn_selecionar = tk.Button(
+    frame_botoes,
+    text="1. Selecionar Arquivos (txt)",
+    font=FONT_BUTTON,
+    bg=BTN_COLOR,
+    fg=BTN_FG_COLOR,
+    relief="flat",
+    padx=15,
+    pady=8,
+    activebackground="#0056b3",
+    activeforeground="#ffffff"
+)
+btn_selecionar.grid(row=0, column=0, padx=10)
 
-        label_resultados = tk.Label(self, text="Resultados:", font=('Arial', 12))
-        label_resultados.pack(pady=(5, 5))
+btn_processar = tk.Button(
+    frame_botoes,
+    text="2. Processar Palavras",
+    font=FONT_BUTTON,
+    bg=BTN_COLOR,
+    fg=BTN_FG_COLOR,
+    relief="flat",
+    padx=15,
+    pady=8,
+    activebackground="#0056b3",
+    activeforeground="#ffffff"
+)
+btn_processar.grid(row=0, column=1, padx=10)
 
-        self.txt_resultados = scrolledtext.ScrolledText(
-            self, 
-            wrap=tk.WORD, 
-            height=20, 
-            width=70,
-            font=('Courier New', 10)
-        )
-        self.txt_resultados.pack(pady=10, padx=10, fill="both", expand=True)
+frame_resultados = tk.Frame(window, bg=BG_COLOR)
+frame_resultados.pack(padx=20, pady=(0, 20), fill="both", expand=True)
 
-        self.txt_resultados.tag_config('cabecalho', foreground='#00008B', font=('Arial', 10, 'bold', 'underline'))
-        self.txt_resultados.tag_config('aceita', foreground='green')
-        self.txt_resultados.tag_config('rejeita', foreground='red')
-        self.txt_resultados.tag_config('erro', foreground='#FF8C00', font=('Arial', 10, 'bold'))
-        self.txt_resultados.tag_config('info', foreground='gray')
+lbl_resultados = tk.Label(
+    frame_resultados,
+    text="Resultados:",
+    font=FONT_BOLD,
+    bg=BG_COLOR,
+    fg=LABEL_COLOR
+)
+lbl_resultados.pack(anchor="w", pady=(0, 5))
 
-    def set_controller(self, controller):
-        self.controller = controller
+text_frame = tk.Frame(
+    frame_resultados,
+    bg=BORDER_COLOR,
+    borderwidth=1,
+    relief="solid"
+)
+text_frame.pack(fill="both", expand=True)
 
-    def solicitar_arquivos_palavras(self):
-        self.filepaths = filedialog.askopenfilenames(
-            title="Selecione os arquivos de palavras",
-            filetypes=[("Arquivos de Texto", "*.txt"), ("Todos os arquivos", "*.*")]
-        )
-        
-        if self.filepaths:
-            self.limpar_resultados()
-            self.txt_resultados.insert(tk.END, f"{len(self.filepaths)} arquivo(s) selecionado(s):\n", 'info')
-            for path in self.filepaths:
-                self.txt_resultados.insert(tk.END, f"  - {path}\n", 'info')
-            self.txt_resultados.insert(tk.END, "\nClique em '2. Processar' para analisar.\n", 'info')
-        else:
-            messagebox.showinfo("Informação", "Nenhum arquivo selecionado.")
+scrollbar = tk.Scrollbar(text_frame)
+scrollbar.pack(side="right", fill="y")
 
-    def iniciar_processamento(self):
-        if not self.controller:
-            self.exibir_erro("O Controller não foi configurado.")
-            return
-        
-        if not self.filepaths:
-            self.exibir_erro("Nenhum arquivo selecionado. Clique em '1. Selecionar' primeiro.")
-            return
-        
-        self.limpar_resultados()
-        
-        self.controller.processar_arquivos_gui(self.filepaths)
+txt_resultados = tk.Text(
+    text_frame,
+    height=15,
+    font=FONT_TEXT,
+    bg=TEXT_BG_COLOR,
+    fg=LABEL_COLOR,
+    relief="flat",
+    borderwidth=0,
+    yscrollcommand=scrollbar.set
+)
+txt_resultados.pack(side="left", fill="both", expand=True)
 
-    def limpar_resultados(self):
-        self.txt_resultados.delete('1.0', tk.END)
+scrollbar.config(command=txt_resultados.yview)
 
-    def exibir_cabecalho_arquivo(self, nome_arquivo):
-        self.txt_resultados.insert(tk.END, f"\n--- Testando: '{nome_arquivo}' ---\n", 'cabecalho')
-
-    def exibir_resultado(self, palavra, resultado):
-        res_str = "ACEITA"
-        tag = 'aceita'
-        if not resultado:
-            res_str = "REJEITA"
-            tag = 'rejeita'
-            
-        palavra_display = palavra if palavra else '""'
-        
-        self.txt_resultados.insert(tk.END, f"  Palavra: {palavra_display:<40} -> {res_str}\n", tag)
-        self.update_idletasks() 
-
-    def exibir_erro(self, mensagem):
-        self.txt_resultados.insert(tk.END, f"[ERRO]: {mensagem}\n", 'erro')
-        if "Arquivo não encontrado" in mensagem or "Nenhum arquivo" in mensagem:
-             messagebox.showerror("Erro de Arquivo", mensagem)
-
-    def main(self):
-        self.mainloop()
+window.mainloop()
