@@ -1,8 +1,16 @@
 
 class Model:
     def aceita_palavra(self, palavra):
-        return palavra.startswith("00")
-
+        if len(palavra) < 2:
+            return False
+        
+        if palavra[0] == '0':
+            if palavra[1] == '0':
+                return True
+            else:
+                return False
+        else:
+            return False
 
 def carregar_palavras(filepath):
     try:
@@ -13,3 +21,4 @@ def carregar_palavras(filepath):
         raise FileNotFoundError(f"Arquivo não encontrado: {filepath}")
     except Exception as e:
         raise IOError(f"Erro ao ler o arquivo '{filepath}': {e}")
+
