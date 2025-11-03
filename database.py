@@ -46,15 +46,15 @@ class DatabaseManager:
             for path in filepaths:
                 nome_arquivo = os.path.basename(path)
                 
-                # Limpa dados antigos deste arquivo para evitar duplicatas
+               
                 self.cursor.execute("DELETE FROM palavras_fonte WHERE arquivo_id IN (SELECT id FROM arquivos_fonte WHERE nome_arquivo = ?)", (nome_arquivo,))
                 self.cursor.execute("DELETE FROM arquivos_fonte WHERE nome_arquivo = ?", (nome_arquivo,))
 
-                # Insere o novo arquivo
+            
                 self.cursor.execute("INSERT INTO arquivos_fonte (nome_arquivo) VALUES (?)", (nome_arquivo,))
                 arquivo_id = self.cursor.lastrowid
                 
-                # Lê as palavras do arquivo
+               
                 with open(path, 'r', encoding='utf-8') as f:
                     palavras_para_inserir = [
                         (arquivo_id, linha.strip()) 
@@ -64,7 +64,7 @@ class DatabaseManager:
                 if not palavras_para_inserir:
                     continue
 
-                # Insere as palavras
+            
                 self.cursor.executemany(
                     "INSERT INTO palavras_fonte (arquivo_id, palavra) VALUES (?, ?)",
                     palavras_para_inserir
@@ -116,8 +116,6 @@ class DatabaseManager:
             self.conn.close()
 
     def resetar_banco_de_dados(self):
-
-  
         try:
             self.cursor.execute("DROP TABLE IF EXISTS validacao_historico")
             self.cursor.execute("DROP TABLE IF EXISTS palavras_fonte")
